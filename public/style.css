@@ -1,0 +1,548 @@
+:root {
+  /* Apple HIG Colors */
+  --system-blue: #007AFF;
+  --system-blue-hover: #005bb5;
+  --system-red: #FF3B30;
+  --system-red-hover: #d63127;
+  --system-orange: #FF9500;
+  
+  /* Theme Variables (Light) */
+  --bg-color: #F2F2F7;
+  --card-bg: #FFFFFF;
+  --msg-bubble-bg: #FFFFFF;
+  --msg-bubble-border: rgba(0,0,0,0.05);
+  
+  --text-main: #1D1D1F;
+  --text-light: #6E6E73;
+  --text-code: #D93874;
+  --border-color: #D2D2D7;
+  
+  --app-header-bg: rgba(255, 255, 255, 0.75);
+  --app-panel-bg: rgba(242, 242, 247, 0.95);
+  --app-modal-bg: rgba(255, 255, 255, 0.9);
+  --pre-bg: #F5F5F7;
+  
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+/* Theme Variables (Dark) */
+:root[data-theme="dark"] {
+  --bg-color: #000000;
+  --card-bg: #1C1C1E;
+  --msg-bubble-bg: #2C2C2E;
+  --msg-bubble-border: rgba(255,255,255,0.05);
+  
+  --text-main: #FFFFFF;
+  --text-light: #98989D;
+  --text-code: #FF6482;
+  --border-color: #38383A;
+  
+  --app-header-bg: rgba(28, 28, 30, 0.75);
+  --app-panel-bg: rgba(0, 0, 0, 0.85);
+  --app-modal-bg: rgba(28, 28, 30, 0.9);
+  --pre-bg: #2C2C2E;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Pretendard", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  line-height: 1.4;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header (Glassmorphism) */
+.app-header {
+  background: var(--app-header-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
+  padding: 14px 20px;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-inner h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.header-inner h1 span {
+  font-weight: 400;
+  color: var(--text-light);
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  gap: 8px;
+}
+
+.admin-header-info {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 122, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-left: 10px;
+}
+
+.url-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: white;
+  background: var(--system-blue);
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-right: 6px;
+  letter-spacing: 0.5px;
+}
+
+.url-txt {
+  font-size: 0.8rem;
+  color: var(--system-blue);
+  font-weight: 500;
+}
+
+.admin-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--system-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.icon-btn:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.text-danger { color: var(--system-red) !important; }
+.text-warning { color: var(--system-orange) !important; }
+
+/* Main Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Alerts & status */
+.alert {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--system-red);
+  padding: 10px 16px;
+  border-radius: 12px;
+  margin: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.hidden { display: none !important; }
+
+/* Scrollable message viewer */
+.viewer-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  -webkit-overflow-scrolling: touch;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-light);
+  padding: 40px 20px;
+  font-size: 0.95rem;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+
+/* Chat Bubbles (HIG Minimal) */
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  animation: popDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  width: 100%;
+}
+
+@keyframes popDown {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.message-item {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  background: var(--msg-bubble-bg);
+  border-radius: 20px;
+  border-top-left-radius: 4px;
+  max-width: 85%;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  border: 0.5px solid var(--msg-bubble-border);
+}
+
+.message-content {
+  font-size: 0.95rem;
+  word-break: break-word;
+  color: var(--text-main);
+}
+
+.message-content h1, .message-content h2, .message-content h3 {
+  margin-bottom: 12px;
+  margin-top: 12px;
+  font-size: 1.15em;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.message-content h1:first-child, .message-content h2:first-child, .message-content p:first-child { margin-top: 0; }
+.message-content p { margin-bottom: 12px; line-height: 1.5; }
+.message-content p:last-child { margin-bottom: 0; }
+
+.message-content pre {
+  background: var(--pre-bg); /* 백색 말풍선 위에 살짝 올라앉는 회색 */
+  color: var(--text-main);
+  padding: 16px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 14px 0;
+  font-size: 0.85rem;
+  border: 1px solid var(--msg-bubble-border);
+  line-height: 1.5;
+}
+
+.message-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: var(--pre-bg);
+  color: var(--text-code);
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 0.85em;
+}
+.message-content pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--border-color);
+}
+
+/* Fixed Bottom Admin Panel */
+.admin-panel {
+  flex-shrink: 0;
+  background: var(--app-panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border-color);
+  padding: 10px 16px calc(10px + var(--safe-area-inset-bottom));
+  width: 100%;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 4px 4px 14px;
+}
+
+.chat-input-wrapper textarea {
+  border: none;
+  background: transparent;
+  flex-grow: 1;
+  padding: 8px 0;
+  margin: 0;
+  max-height: 300px;
+  min-height: 24px;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.4;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.chat-input-wrapper textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.send-icon-btn {
+  background: var(--system-blue);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 1px;
+  margin-left: 8px;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.send-icon-btn:active {
+  opacity: 0.7;
+}
+.send-icon-btn:hover {
+  background: var(--system-blue-hover);
+}
+
+/* Buttons (iOS Style) */
+.btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
+  transition: opacity 0.2s, background 0.2s;
+}
+.btn:active { opacity: 0.7; }
+
+.btn-sm { 
+  padding: 4px 12px; 
+  font-size: 0.8rem; 
+  border-radius: 12px; 
+}
+
+.btn-primary { 
+  background: var(--system-blue); 
+  color: white; 
+}
+.btn-primary:active { background: var(--system-blue-hover); }
+
+.btn-outline { 
+  background: rgba(0, 122, 255, 0.1); 
+  color: var(--system-blue); 
+}
+.btn-outline:active { background: rgba(0, 122, 255, 0.2); }
+
+.btn-danger { 
+  background: rgba(255, 59, 48, 0.1); 
+  color: var(--system-red); 
+}
+.btn-danger:active { background: rgba(255, 59, 48, 0.2); }
+
+.btn-warning { 
+  background: rgba(255, 149, 0, 0.1); 
+  color: var(--system-orange);
+}
+.btn-warning:active { background: rgba(255, 149, 0, 0.2); }
+
+.btn-text { 
+  background: none; 
+  color: var(--system-blue); 
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: var(--app-modal-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  padding: 24px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.modal-content h2 { 
+  margin-bottom: 6px; 
+  font-size: 1.1rem; 
+  font-weight: 600; 
+}
+
+.modal-content p { 
+  color: var(--text-light); 
+  margin-bottom: 20px; 
+  font-size: 0.85rem; 
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0.5px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  background: var(--card-bg);
+  color: var(--text-main);
+  text-align: center;
+}
+.modal-content input:focus {
+  outline: none;
+  border-color: var(--system-blue);
+}
+
+.modal-actions {
+  display: flex;
+  border-top: 0.5px solid var(--border-color);
+  margin: 0 -24px -24px -24px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+  background: none;
+  border-radius: 0;
+  padding: 14px;
+  font-size: 1rem;
+  color: var(--system-blue);
+}
+
+.modal-actions .btn:first-child {
+  border-right: 0.5px solid var(--border-color);
+  color: var(--system-red);
+}
+
+/* ========================================================= */
+/* Responsive Layout (Media Queries)                         */
+/* ========================================================= */
+
+/* Tablet & Smaller Desktop (Max 1024px) */
+@media (max-width: 1024px) {
+  .message-item {
+    max-width: 90%;
+  }
+}
+
+/* Mobile & Small Tablet (Max 768px) */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 10px 16px;
+  }
+  
+  .header-inner h1 {
+    font-size: 1.05rem;
+  }
+  
+  .viewer-container {
+    padding: 16px;
+  }
+  
+  .message-item {
+    max-width: 95%; /* 모바일에서는 텍스트 영역을 더 넓게 보장 */
+    padding: 10px 14px;
+    border-radius: 16px;
+    border-top-left-radius: 4px;
+  }
+
+  .message-content h1, .message-content h2, .message-content h3 {
+    font-size: 1.05em;
+  }
+  
+  .message-content {
+    font-size: 0.9rem;
+  }
+
+  .message-content pre {
+    padding: 10px;
+    font-size: 0.8rem;
+  }
+
+  .admin-panel {
+    padding: 10px 12px calc(10px + var(--safe-area-inset-bottom));
+  }
+  
+  .chat-input-wrapper {
+    padding: 4px 4px 4px 10px;
+  }
+  
+  .btn {
+    font-size: 0.85rem;
+    padding: 6px 14px;
+  }
+}
+
+/* Extra Small Mobile (Max 480px) */
+@media (max-width: 480px) {
+  .message-item {
+    max-width: 100%; /* 아주 작은 화면에서는 100%로 꽉 채움 */
+  }
+  
+  .url-badge {
+    display: none; /* 공간 절약을 위해 ROOM 배지 숨김 */
+  }
+  
+  .admin-header-info {
+    margin-left: 6px;
+    padding: 4px 6px;
+  }
+}
