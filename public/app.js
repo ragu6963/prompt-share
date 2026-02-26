@@ -2,6 +2,8 @@ const socket = io();
 
 // UI Elements
 const els = {
+    downloadPdfBtn: document.getElementById('downloadPdfBtn'),
+    downloadTxtBtn: document.getElementById('downloadTxtBtn'),
     themeToggleBtn: document.getElementById('themeToggleBtn'),
     themeIcon: document.getElementById('themeIcon'),
     adminBtn: document.getElementById('adminBtn'),
@@ -97,7 +99,99 @@ socket.on('urlRotated', (newRoomId) => {
 
 
 // DOM Events
-// 1. Theme Toggle
+// 1. Download Actions
+els.downloadPdfBtn.addEventListener('click', () => {
+    if (currentMessages.length === 0) {
+        alert('다운로드할 프롬프트가 없습니다.');
+        return;
+    }
+
+    const today = new Date();
+    const dateStr = today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    
+    // PDF 변환을 위한 임시 DOM 요소 생성
+    const container = document.createElement('div');
+    container.style.padding = '20px';
+    container.style.fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Pretendard", sans-serif';
+    container.style.color = '#1D1D1F';
+    container.style.backgroundColor = '#FFFFFF';
+
+    currentMessages.slice().reverse().forEach((msg, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.style.marginBottom = '20px';
+        itemDiv.style.padding = '15px';
+        itemDiv.style.border = '1px solid #D2D2D7';
+        itemDiv.style.borderRadius = '8px';
+        // PDF 페이지 분할 시 항목이 잘리지 않도록 설정
+        itemDiv.style.pageBreakInside = 'avoid';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = marked.parse(`\`\`\`markdown\n${msg.text}\n\`\`\``);
+        
+        // 내부 pre 요소 스타일링 (PDF에서 깔끔하게 보이도록)
+        const pres = contentDiv.querySelectorAll('pre');
+        pres.forEach(pre => {
+            pre.style.backgroundColor = 'transparent';
+            pre.style.padding = '0';
+            pre.style.borderRadius = '0';
+            pre.style.overflowX = 'hidden';
+            pre.style.whiteSpace = 'pre-wrap'; // 긴 텍스트 줄바꿈 보장
+            pre.style.wordBreak = 'break-word';
+            pre.style.fontSize = '12px';
+            pre.style.lineHeight = '1.6';
+            pre.style.margin = '0';
+        });
+
+        itemDiv.appendChild(contentDiv);
+        container.appendChild(itemDiv);
+    });
+
+    const opt = {
+        margin:       10,
+        filename:     `prompts_${dateStr}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // 다운로드 중 버튼 상태 변경
+    const originalContent = els.downloadPdfBtn.innerHTML;
+    els.downloadPdfBtn.innerHTML = '<span style="font-size:0.7rem; font-weight:bold;">PDF...</span>';
+    els.downloadPdfBtn.disabled = true;
+
+    html2pdf().set(opt).from(container).save().then(() => {
+        // 원래 버튼 상태로 복구
+        els.downloadPdfBtn.innerHTML = originalContent;
+        els.downloadPdfBtn.disabled = false;
+    });
+});
+
+els.downloadTxtBtn.addEventListener('click', () => {
+    if (currentMessages.length === 0) {
+        alert('다운로드할 프롬프트가 없습니다.');
+        return;
+    }
+    
+    let txtContent = '';
+    currentMessages.slice().reverse().forEach((msg, index) => {
+        txtContent += `[프롬프트 ${index + 1}]\n${msg.text}\n\n----------------------------------------\n\n`;
+    });
+    
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    const today = new Date();
+    const dateStr = today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    
+    a.download = `prompts_${dateStr}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
 function updateThemeIcon() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     if (currentTheme === 'dark') {
@@ -226,7 +320,7 @@ function renderMessages() {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
         // XSS 취약점이 있을 수 있지만 MVP에서는 marked 기본 허용
-        contentDiv.innerHTML = marked.parse(msg.text);
+        contentDiv.innerHTML = marked.parse(`\`\`\`text\n${msg.text}\n\`\`\``);
         
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'message-actions';

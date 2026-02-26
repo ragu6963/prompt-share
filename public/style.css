@@ -247,15 +247,17 @@ body {
 .message-content p:last-child { margin-bottom: 0; }
 
 .message-content pre {
-  background: var(--pre-bg); /* 백색 말풍선 위에 살짝 올라앉는 회색 */
+  background: transparent;
   color: var(--text-main);
-  padding: 16px;
-  border-radius: 12px;
-  overflow-x: auto;
-  margin: 14px 0;
-  font-size: 0.85rem;
-  border: 1px solid var(--msg-bubble-border);
+  padding: 0;
+  border-radius: 0;
+  overflow-x: hidden;
+  margin: 0;
+  font-size: 0.95rem;
+  border: none;
   line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .message-content code {
@@ -544,5 +546,79 @@ body {
   .admin-header-info {
     margin-left: 6px;
     padding: 4px 6px;
+  }
+}
+
+/* ========================================================= */
+/* Print & Native PDF Styles                                 */
+/* ========================================================= */
+.print-container {
+  display: none;
+}
+
+@media print {
+  /* Hide all normal UI */
+  body.is-printing > *:not(.print-container) {
+    display: none !important;
+  }
+  
+  body.is-printing {
+    background: #FFF;
+    color: #000;
+    height: auto;
+    overflow: auto;
+  }
+
+  /* Show Print Container */
+  .print-container {
+    display: block !important;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Pretendard", sans-serif;
+    color: #000;
+  }
+
+  .print-container h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+
+  .print-container p {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #666;
+  }
+
+  .print-container hr {
+    margin-bottom: 20px;
+    border: none;
+    border-top: 2px solid #EEE;
+  }
+
+  .print-item {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid #CCC;
+    border-radius: 8px;
+  }
+
+  .print-page-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-item h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #007AFF;
+    font-size: 16px;
+  }
+  
+  .print-item pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+    color: #000;
   }
 }

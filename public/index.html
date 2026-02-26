@@ -6,6 +6,8 @@
     <title>PromptShare Live</title>
     <!-- 마크다운 렌더링 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- PDF 변환 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Socket.IO 클라이언트 -->
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/style.css">
@@ -26,6 +28,12 @@
                 </div>
             </div>
             <div class="header-right">
+                <button id="downloadPdfBtn" class="icon-btn" title="PDF 문서 다운로드">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </button>
+                <button id="downloadTxtBtn" class="icon-btn" title="텍스트(.txt) 다운로드">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
                 <button id="themeToggleBtn" class="icon-btn" title="테마 변경">
                     <!-- Light / Dark 아이콘 토글에 쓰일 껍데기 -->
                     <svg id="themeIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
