@@ -51,6 +51,11 @@ resetInactivityTimer();
 // 정적 파일 제공 (public 폴더)
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Render 배포 환경 Spin-down 방지용 핑(Ping) 라우트
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
 // 가변 경로 라우팅 - 어떤 /live/:id 경로든 index.html을 반환
 app.get('/live/:roomId', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

@@ -249,6 +249,11 @@ function attemptLogin() {
 
             currentMessages = response.currentMessages;
             renderMessages();
+            
+            // Render 절전 모드 방지용 Keep-Alive (강사 접속 시 10분마다 핑 발송)
+            setInterval(() => {
+                fetch('/ping').catch(err => console.error('Ping error:', err));
+            }, 10 * 60 * 1000);
         } else {
             alert('비밀번호가 일치하지 않습니다.');
         }
