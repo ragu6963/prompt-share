@@ -274,6 +274,70 @@ body {
   color: inherit;
 }
 
+/* Markdown Preview Specific Styles */
+.markdown-preview {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.markdown-preview pre {
+  background: var(--pre-bg);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--msg-bubble-border);
+  margin-top: 10px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--text-main);
+  border: none;
+  font-size: 0.9em;
+  white-space: pre-wrap; 
+}
+
+.markdown-preview code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: rgba(120, 120, 120, 0.1);
+  color: var(--text-code);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.markdown-preview p,
+.markdown-preview ul,
+.markdown-preview ol {
+  margin-bottom: 14px;
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-color);
+  color: var(--text-light);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.code-copy-btn:hover {
+  background: var(--card-bg);
+  color: var(--text-main);
+  border-color: var(--system-blue);
+}
+
 .message-actions {
   display: flex;
   justify-content: flex-end;

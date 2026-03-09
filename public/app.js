@@ -106,6 +106,9 @@ els.downloadPdfBtn.addEventListener('click', () => {
         return;
     }
 
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', 'light');
+
     const today = new Date();
     const dateStr = today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
     
@@ -126,21 +129,38 @@ els.downloadPdfBtn.addEventListener('click', () => {
         itemDiv.style.pageBreakInside = 'avoid';
 
         const contentDiv = document.createElement('div');
-        contentDiv.innerHTML = marked.parse(`\`\`\`markdown\n${msg.text}\n\`\`\``);
         
-        // 내부 pre 요소 스타일링 (PDF에서 깔끔하게 보이도록)
-        const pres = contentDiv.querySelectorAll('pre');
-        pres.forEach(pre => {
-            pre.style.backgroundColor = 'transparent';
-            pre.style.padding = '0';
-            pre.style.borderRadius = '0';
-            pre.style.overflowX = 'hidden';
-            pre.style.whiteSpace = 'pre-wrap'; // 긴 텍스트 줄바꿈 보장
-            pre.style.wordBreak = 'break-word';
-            pre.style.fontSize = '12px';
-            pre.style.lineHeight = '1.6';
-            pre.style.margin = '0';
+        const rawLabel = createBadgeLabel('프롬프트 원문', true);
+        
+        const pre = document.createElement('pre');
+        pre.textContent = msg.text;
+        pre.style.overflowX = 'hidden';
+        pre.style.whiteSpace = 'pre-wrap'; // 긴 텍스트 줄바꿈 보장
+        pre.style.wordBreak = 'break-word';
+        pre.style.fontSize = '12px';
+        pre.style.lineHeight = '1.6';
+        pre.style.margin = '0 0 10px 0';
+        pre.style.fontFamily = 'inherit';
+        
+        const mdLabel = createBadgeLabel('마크다운 형식', true, 'orange');
+        mdLabel.style.marginTop = '10px';
+        
+        const markdownDiv = document.createElement('div');
+        markdownDiv.innerHTML = DOMPurify.sanitize(marked.parse(msg.text));
+        // 내부 요소 스타일링
+        markdownDiv.querySelectorAll('pre, code').forEach(el => {
+            el.style.backgroundColor = '#f1f3f5';
+            el.style.padding = '2px 4px';
+            el.style.borderRadius = '4px';
+            el.style.fontSize = '12px';
+            el.style.whiteSpace = 'pre-wrap';
+            el.style.wordBreak = 'break-word';
         });
+        
+        contentDiv.appendChild(rawLabel);
+        contentDiv.appendChild(pre);
+        contentDiv.appendChild(mdLabel);
+        contentDiv.appendChild(markdownDiv);
 
         itemDiv.appendChild(contentDiv);
         container.appendChild(itemDiv);
@@ -163,6 +183,12 @@ els.downloadPdfBtn.addEventListener('click', () => {
         // 원래 버튼 상태로 복구
         els.downloadPdfBtn.innerHTML = originalContent;
         els.downloadPdfBtn.disabled = false;
+        
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
     });
 });
 
@@ -268,7 +294,7 @@ els.promptInput.addEventListener('input', function() {
 });
 
 els.promptInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.shiftKey) {
+    if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault(); // 기본 줄바꿈 방지
         els.sendBtn.click(); // 전송 버튼 클릭 효과
     }
@@ -324,8 +350,56 @@ function renderMessages() {
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        // XSS 취약점이 있을 수 있지만 MVP에서는 marked 기본 허용
-        contentDiv.innerHTML = marked.parse(`\`\`\`text\n${msg.text}\n\`\`\``);
+        
+        const rawLabel = createBadgeLabel('프롬프트 원문');
+        
+        // 원문 뷰어
+        const pre = document.createElement('pre');
+        pre.textContent = msg.text;
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.wordBreak = 'break-word';
+        pre.style.fontFamily = 'inherit';
+        pre.style.margin = '0';
+        
+        const mdDivider = document.createElement('div');
+        mdDivider.style.marginTop = '15px';
+        mdDivider.style.paddingTop = '15px';
+        mdDivider.style.borderTop = '1px dashed var(--border-color)';
+        
+        const mdLabel = createBadgeLabel('마크다운 형식', false, 'orange');
+        
+        mdDivider.appendChild(mdLabel);
+        
+        // 마크다운 파싱 뷰어
+        const markdownDiv = document.createElement('div');
+        markdownDiv.className = 'markdown-preview';
+        markdownDiv.innerHTML = DOMPurify.sanitize(marked.parse(msg.text));
+        
+        // 코드 블록 복사 버튼 추가
+        markdownDiv.querySelectorAll('pre').forEach(preEl => {
+            preEl.style.position = 'relative';
+            const codeCopyBtn = document.createElement('button');
+            codeCopyBtn.textContent = '코드 복사';
+            codeCopyBtn.className = 'code-copy-btn';
+            
+            codeCopyBtn.onclick = () => {
+                const codeNode = preEl.querySelector('code');
+                const textToCopy = codeNode ? codeNode.textContent : preEl.textContent.replace('코드 복사', '');
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const original = codeCopyBtn.textContent;
+                    codeCopyBtn.textContent = '복사됨 ✔';
+                    setTimeout(() => codeCopyBtn.textContent = original, 2000);
+                });
+            };
+            preEl.appendChild(codeCopyBtn);
+        });
+        
+        mdDivider.appendChild(markdownDiv);
+        
+        contentDiv.appendChild(rawLabel);
+        contentDiv.appendChild(pre);
+        contentDiv.appendChild(mdDivider);
         
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'message-actions';
@@ -347,7 +421,9 @@ function renderMessages() {
             delBtn.className = 'btn btn-sm btn-danger';
             delBtn.textContent = '삭제';
             delBtn.onclick = () => {
-                socket.emit('deleteMessage', msg.id);
+                if(confirm('이 프롬프트를 삭제하시겠습니까?')) {
+                    socket.emit('deleteMessage', msg.id);
+                }
             };
             actionsDiv.appendChild(delBtn);
         }
@@ -362,6 +438,34 @@ function renderMessages() {
 }
 
 // Helpers
+function createBadgeLabel(text, isForPdf = false, colorType = 'blue') {
+    const label = document.createElement('div');
+    label.textContent = text;
+    label.style.fontWeight = isForPdf ? 'bold' : '600';
+    label.style.borderRadius = '4px';
+    label.style.display = 'inline-block';
+    
+    if (colorType === 'orange') {
+        label.style.color = isForPdf ? '#FF9500' : 'var(--system-orange)';
+        label.style.backgroundColor = 'rgba(255, 149, 0, 0.1)';
+    } else {
+        label.style.color = isForPdf ? '#007AFF' : 'var(--system-blue)';
+        label.style.backgroundColor = 'rgba(0, 122, 255, 0.1)';
+    }
+    
+    if (isForPdf) {
+        label.style.fontSize = '10px';
+        label.style.padding = '2px 6px';
+        label.style.marginBottom = '6px';
+    } else {
+        label.style.fontSize = '0.75rem';
+        label.style.padding = '2px 8px';
+        label.style.marginBottom = '8px';
+    }
+    
+    return label;
+}
+
 function showDisconnected(msg) {
     socket.disconnect(); // 소켓 강제 해제
     els.statusAlert.textContent = msg;
@@ -375,3 +479,4 @@ function showDisconnected(msg) {
     els.emptyState.classList.remove('hidden');
     els.emptyState.textContent = '연결이 해제되었습니다.';
 }
+

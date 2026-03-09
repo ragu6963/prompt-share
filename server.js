@@ -20,8 +20,9 @@ const io = new Server(server, {
   pingInterval: 25000
 });
 
-// 환경 변수 또는 하드코딩된 서버 비밀번호 (MVP 용)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '1234';
+// 환경 변수 또는 하드코딩된 서버 비밀번호 (여러 개일 경우 쉼표로 구분)
+const rawPasswords = process.env.ADMIN_PASSWORD || '1234';
+const validPasswords = rawPasswords.split(',').map(p => p.trim());
 
 // 메모리 상태 저장 (단일 룸)
 let currentRoomPath = crypto.randomBytes(4).toString('hex'); // 초기 랜덤 URL 경로
@@ -88,7 +89,7 @@ io.on('connection', (socket) => {
 
   // 강사 인증
   socket.on('authenticate', (password, callback) => {
-    if (password === ADMIN_PASSWORD) {
+    if (validPasswords.includes(password)) {
       socket.isAdmin = true;
       callback({ success: true, currentRoomPath, currentMessages });
     } else {
@@ -158,8 +159,8 @@ server.listen(PORT, () => {
   console.log(`[${new Date().toISOString()}] 서버가 시작되었습니다. 포트: ${PORT}`);
   console.log(`[${new Date().toISOString()}] 현재 접속 URL 경로: /live/${currentRoomPath}`);
   
-  if (ADMIN_PASSWORD === '1234') {
-    console.log(`[${new Date().toISOString()}] ⚠️ ️경고: 기본 환경 비밀번호가 사용되었습니다. 배포 시 ADMIN_PASSWORD 환경변수를 지정하세요.`);
+  if (validPasswords.includes('1234')) {
+    console.log(`[${new Date().toISOString()}] ⚠️ ️경고: 기본 환경 비밀번호가 사용되었습니다. 배포 시 ADMIN_PASSWORD 환경변수를 지정하세요. (여러 개일 경우 쉼표로 구분)`);
   }
 });
 
