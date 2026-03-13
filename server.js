@@ -11,9 +11,14 @@ app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 // Socket.io 배포 최적화 설정
+// 허용할 출처: 환경변수 ALLOWED_ORIGIN이 설정된 경우 해당 값만 허용
+// 예) ALLOWED_ORIGIN=https://your-app.onrender.com
+// 미설정 시 개발 편의를 위해 전체 허용 (배포 시 반드시 설정 권장)
+const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
+
 const io = new Server(server, {
   cors: {
-    origin: '*', // 허용할 도메인 지정 권장 (현재는 모두 허용)
+    origin: allowedOrigin,
     methods: ['GET', 'POST']
   },
   pingTimeout: 60000,   // 모바일 등 환경에서 연결 끊김 방지
