@@ -34,6 +34,7 @@ let currentRoomPath = crypto.randomBytes(4).toString('hex'); // 초기 랜덤 UR
 let currentMessages = [];
 let lastActivityTime = Date.now();
 let cleanupTimer = null;
+let adminCount = 0;
 
 // 6시간 (밀리초)
 const CLEANUP_INTERVAL = 6 * 60 * 60 * 1000;
@@ -90,15 +91,29 @@ io.on('connection', (socket) => {
     // 정상 방 설정
     socket.join(currentRoomPath);
     socket.emit('initMessages', currentMessages);
+    socket.emit('instructorStatus', adminCount > 0);
   });
 
   // 강사 인증
   socket.on('authenticate', (password, callback) => {
     if (validPasswords.includes(password)) {
-      socket.isAdmin = true;
+      if (!socket.isAdmin) {
+        socket.isAdmin = true;
+        adminCount++;
+        io.to(currentRoomPath).emit('instructorStatus', true);
+      }
       callback({ success: true, currentRoomPath, currentMessages });
     } else {
       callback({ success: false, message: '비밀번호가 틀렸습니다.' });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.isAdmin) {
+      adminCount = Math.max(0, adminCount - 1);
+      if (adminCount === 0) {
+        io.to(currentRoomPath).emit('instructorStatus', false);
+      }
     }
   });
 

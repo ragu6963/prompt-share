@@ -9,6 +9,7 @@ const els = {
     adminBtn: document.getElementById('adminBtn'),
     statusAlert: document.getElementById('statusAlert'),
     adminHeaderInfo: document.getElementById('adminHeaderInfo'),
+    liveBadge: document.getElementById('liveBadge'),
     adminTools: document.getElementById('adminTools'),
     currentUrlTxt: document.getElementById('currentUrlTxt'),
     copyInviteBtn: document.getElementById('copyInviteBtn'),
@@ -114,6 +115,16 @@ socket.on('messageDeleted', (msgId) => {
 socket.on('urlRotated', (newRoomId) => {
     els.currentUrlTxt.textContent = `/live/${newRoomId}`;
     history.replaceState(null, '', `/live/${newRoomId}`);
+});
+
+socket.on('instructorStatus', (isLive) => {
+    if (els.liveBadge) {
+        if (isLive) {
+            els.liveBadge.classList.remove('hidden');
+        } else {
+            els.liveBadge.classList.add('hidden');
+        }
+    }
 });
 
 
