@@ -53,13 +53,16 @@
                 </button>
                 <div id="adminTools" class="admin-tools hidden">
                     <button id="copyInviteBtn" class="icon-btn" title="초대 링크 복사">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                        <span class="btn-text-label">초대 복사</span>
                     </button>
                     <button id="rotateUrlBtn" class="icon-btn text-warning" title="방 접속 경로 갱신">
-                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                         <span class="btn-text-label">경로 변경</span>
                     </button>
                     <button id="clearAllBtn" class="icon-btn text-danger" title="대화 전체 강제 삭제">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span class="btn-text-label">전체 삭제</span>
                     </button>
                 </div>
             </div>
@@ -96,6 +99,10 @@
 
         <!-- 관리자 도구 패널 (iOS 스타일 입력창) -->
         <div id="adminPanel" class="admin-panel hidden">
+            <div class="admin-status-bar">
+                <span class="status-indicator"></span>
+                <span>세션 진행 중 : 수강생에게 프롬프트를 전송할 수 있습니다.</span>
+            </div>
             <div class="chat-input-wrapper">
                 <textarea id="promptInput" rows="1" placeholder="메시지 또는 프롬프트 (마크다운 지원)"></textarea>
                 <button id="sendBtn" class="send-icon-btn">

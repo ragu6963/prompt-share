@@ -49,6 +49,14 @@
   padding: 0;
 }
 
+html {
+  font-size: 16px;
+}
+
+@media (min-width: 1600px) {  html { font-size: 18px; } }
+@media (max-width: 1200px) {  html { font-size: 15px; } }
+@media (max-width: 768px) {  html { font-size: 14px; } }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Pretendard", sans-serif;
   background-color: var(--bg-color);
@@ -679,6 +687,33 @@ body {
   border-top: 0.5px solid var(--border-color);
   padding: 10px 16px calc(10px + var(--safe-area-inset-bottom));
   width: 100%;
+}
+
+.admin-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--system-blue);
+  box-shadow: 0 0 4px var(--system-blue);
+  animation: pulseLight 2s infinite;
+}
+
+@keyframes pulseLight {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; box-shadow: 0 0 6px var(--system-blue); }
+  100% { opacity: 0.6; }
 }
 
 .chat-input-wrapper {
