@@ -163,6 +163,25 @@ body {
   font-weight: 500;
 }
 
+.student-count-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--system-blue);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 12px;
+  margin-left: 8px;
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+:root[data-theme="dark"] .student-count-badge {
+  background: rgba(0, 122, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .admin-tools {
   display: flex;
   align-items: center;

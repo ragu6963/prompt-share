@@ -35,6 +35,7 @@ let currentMessages = [];
 let lastActivityTime = Date.now();
 let cleanupTimer = null;
 let adminCount = 0;
+let studentCount = 0;
 
 // 6시간 (밀리초)
 const CLEANUP_INTERVAL = 6 * 60 * 60 * 1000;
@@ -90,6 +91,11 @@ io.on('connection', (socket) => {
     
     // 정상 방 설정
     socket.join(currentRoomPath);
+    if (!socket.isStudent) {
+      socket.isStudent = true;
+      studentCount++;
+      io.to(currentRoomPath).emit('studentCountUpdate', studentCount);
+    }
     socket.emit('initMessages', currentMessages);
     socket.emit('instructorStatus', adminCount > 0);
   });
@@ -98,11 +104,16 @@ io.on('connection', (socket) => {
   socket.on('authenticate', (password, callback) => {
     if (validPasswords.includes(password)) {
       if (!socket.isAdmin) {
+        if (socket.isStudent) {
+          socket.isStudent = false;
+          studentCount = Math.max(0, studentCount - 1);
+          io.to(currentRoomPath).emit('studentCountUpdate', studentCount);
+        }
         socket.isAdmin = true;
         adminCount++;
         io.to(currentRoomPath).emit('instructorStatus', true);
       }
-      callback({ success: true, currentRoomPath, currentMessages });
+      callback({ success: true, currentRoomPath, currentMessages, studentCount });
     } else {
       callback({ success: false, message: '비밀번호가 틀렸습니다.' });
     }
@@ -114,6 +125,10 @@ io.on('connection', (socket) => {
       if (adminCount === 0) {
         io.to(currentRoomPath).emit('instructorStatus', false);
       }
+    }
+    if (socket.isStudent) {
+      studentCount = Math.max(0, studentCount - 1);
+      io.to(currentRoomPath).emit('studentCountUpdate', studentCount);
     }
   });
 

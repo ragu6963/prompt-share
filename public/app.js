@@ -10,6 +10,7 @@ const els = {
     statusAlert: document.getElementById('statusAlert'),
     adminHeaderInfo: document.getElementById('adminHeaderInfo'),
     liveBadge: document.getElementById('liveBadge'),
+    studentCountTxt: document.getElementById('studentCountTxt'),
     adminTools: document.getElementById('adminTools'),
     currentUrlTxt: document.getElementById('currentUrlTxt'),
     copyInviteBtn: document.getElementById('copyInviteBtn'),
@@ -124,6 +125,12 @@ socket.on('instructorStatus', (isLive) => {
         } else {
             els.liveBadge.classList.add('hidden');
         }
+    }
+});
+
+socket.on('studentCountUpdate', (count) => {
+    if (isAdmin && els.studentCountTxt) {
+        els.studentCountTxt.textContent = count;
     }
 });
 
@@ -309,6 +316,10 @@ function activateAdminUI(response) {
     els.adminTools.classList.remove('hidden');
     els.adminPanel.classList.remove('hidden');
     els.currentUrlTxt.textContent = `/live/${response.currentRoomPath}`;
+    
+    if (els.studentCountTxt && response.studentCount !== undefined) {
+        els.studentCountTxt.textContent = response.studentCount;
+    }
 
     // URL 동기화
     if (window.location.pathname !== `/live/${response.currentRoomPath}`) {
