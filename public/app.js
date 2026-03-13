@@ -367,7 +367,7 @@ els.rotateUrlBtn.addEventListener('click', () => {
 els.copyInviteBtn.addEventListener('click', () => {
     const fullUrl = `${window.location.origin}${els.currentUrlTxt.textContent}`;
     navigator.clipboard.writeText(fullUrl).then(() => {
-        alert('초대 링크가 복사되었습니다!');
+        showToast('초대 링크가 복사되었습니다!');
     });
 });
 
@@ -425,6 +425,7 @@ function renderMessages() {
                 const textToCopy = codeNode ? codeNode.textContent : preEl.textContent.replace('코드 복사', '');
                 
                 navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast('코드 블록이 복사되었습니다.');
                     const original = codeCopyBtn.textContent;
                     codeCopyBtn.textContent = '복사됨 ✔';
                     setTimeout(() => codeCopyBtn.textContent = original, 2000);
@@ -439,22 +440,30 @@ function renderMessages() {
         contentDiv.appendChild(pre);
         contentDiv.appendChild(mdDivider);
         
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'message-actions';
-        
+        div.style.position = 'relative';
+
         const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn btn-sm btn-outline';
-        copyBtn.textContent = '복사';
+        copyBtn.className = 'card-copy-btn';
+        copyBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>복사</span>';
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(msg.text).then(() => {
-               const original = copyBtn.textContent;
-               copyBtn.textContent = '복사됨 ✔';
-               setTimeout(()=> copyBtn.textContent = original, 2000);
+               showToast('프롬프트 전체가 복사되었습니다.');
+               const span = copyBtn.querySelector('span');
+               span.textContent = '복사됨';
+               copyBtn.classList.add('copied');
+               setTimeout(()=> {
+                   span.textContent = '복사';
+                   copyBtn.classList.remove('copied');
+               }, 2000);
             });
         };
-        actionsDiv.appendChild(copyBtn);
+        div.appendChild(copyBtn);
+
+        div.appendChild(contentDiv);
         
         if (isAdmin) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'message-actions';
             const delBtn = document.createElement('button');
             delBtn.className = 'btn btn-sm btn-danger';
             delBtn.textContent = '삭제';
@@ -464,10 +473,8 @@ function renderMessages() {
                 }
             };
             actionsDiv.appendChild(delBtn);
+            div.appendChild(actionsDiv);
         }
-        
-        div.appendChild(contentDiv);
-        div.appendChild(actionsDiv);
         
         wrapperDiv.appendChild(div);
         
@@ -527,5 +534,27 @@ function showDisconnected(msg) {
         <p class="empty-state-title" style="color: var(--system-red);">연결이 해제되었습니다</p>
         <p class="empty-state-desc">페이지를 새로고침하거나<br>강사님께 접속 주소를 확인해주세요.</p>
     `;
+}
+
+function showToast(message) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
 }
 
