@@ -396,11 +396,8 @@ function renderMessages() {
         
         // 원문 뷰어
         const pre = document.createElement('pre');
+        pre.className = 'raw-prompt-preview';
         pre.textContent = msg.text;
-        pre.style.whiteSpace = 'pre-wrap';
-        pre.style.wordBreak = 'break-word';
-        pre.style.fontFamily = 'inherit';
-        pre.style.margin = '0';
         
         const mdDivider = document.createElement('div');
         mdDivider.style.marginTop = '15px';

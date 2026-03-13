@@ -308,12 +308,13 @@ body {
 .message-item {
   display: flex;
   flex-direction: column;
-  align-self: flex-start;
+  align-self: stretch;
   background: var(--msg-bubble-bg);
   border-radius: 20px;
   border-top-left-radius: 4px;
-  max-width: 85%;
-  padding: 16px 20px;
+  width: 100%;
+  max-width: 100%;
+  padding: 20px 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
   border: 0.5px solid var(--msg-bubble-border);
 }
@@ -363,6 +364,18 @@ body {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.raw-prompt-preview {
+  background: var(--pre-bg);
+  color: var(--text-main);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--msg-bubble-border);
+  margin-top: 6px !important;
+  margin-bottom: 0 !important;
+  font-size: 0.9em !important;
 }
 
 .message-content code {
@@ -781,7 +794,7 @@ body {
 /* Tablet & Smaller Desktop (Max 1024px) */
 @media (max-width: 1024px) {
   .message-item {
-    max-width: 90%;
+    max-width: 100%;
   }
 }
 
@@ -810,8 +823,8 @@ body {
   }
   
   .message-item {
-    max-width: 95%; /* 모바일에서는 텍스트 영역을 더 넓게 보장 */
-    padding: 10px 14px;
+    max-width: 100%; /* 모바일에서도 텍스트 영역을 전체 너비로 보장 */
+    padding: 14px 16px;
     border-radius: 16px;
     border-top-left-radius: 4px;
   }
