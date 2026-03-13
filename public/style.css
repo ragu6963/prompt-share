@@ -189,11 +189,65 @@ body {
 }
 
 .empty-state {
-  text-align: center;
-  color: var(--text-light);
-  padding: 40px 20px;
-  font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    text-align: center;
+    padding: 60px 20px;
+    gap: 0;
 }
+
+.empty-state-icon {
+    margin-bottom: 20px;
+    animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+}
+
+.empty-state-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.empty-state-desc {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+/* 대기 중 펄스 도트 */
+.empty-state-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.empty-state-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--system-blue);
+    opacity: 0.3;
+    animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.empty-state-dots span:nth-child(2) { animation-delay: 0.2s; }
+.empty-state-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40%            { opacity: 1;   transform: scale(1.2); }
+}
+
 
 .message-list {
   display: flex;

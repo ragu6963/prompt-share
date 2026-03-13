@@ -508,6 +508,16 @@ function showDisconnected(msg) {
     
     els.messageList.innerHTML = '';
     els.emptyState.classList.remove('hidden');
-    els.emptyState.textContent = '연결이 해제되었습니다.';
+    els.emptyState.innerHTML = `
+        <div class="empty-state-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="64" height="64" rx="18" fill="var(--system-red)" fill-opacity="0.1"/>
+                <line x1="20" y1="20" x2="44" y2="44" stroke="var(--system-red)" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="44" y1="20" x2="20" y2="44" stroke="var(--system-red)" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <p class="empty-state-title" style="color: var(--system-red);">연결이 해제되었습니다</p>
+        <p class="empty-state-desc">페이지를 새로고침하거나<br>강사님께 접속 주소를 확인해주세요.</p>
+    `;
 }
 
