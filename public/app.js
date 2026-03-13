@@ -41,11 +41,26 @@ function getRoomIdFromUrl() {
 // Initialization connect
 socket.on('connect', () => {
     const roomId = getRoomIdFromUrl();
+
+    // 저장된 강사 세션이 있으면 자동 재인증 시도
+    const savedPw = localStorage.getItem('adminSession');
+    if (savedPw) {
+        socket.emit('authenticate', savedPw, (response) => {
+            if (response.success) {
+                // 재인증 성공: UI 복원
+                activateAdminUI(response);
+            } else {
+                // 저장된 비밀번호가 더 이상 유효하지 않음 (서버 비밀번호 변경 등)
+                localStorage.removeItem('adminSession');
+                if (roomId) socket.emit('joinRoom', { roomId });
+            }
+        });
+        return;
+    }
+
     if (roomId) {
         // 방에 조인 요청
         socket.emit('joinRoom', { roomId });
-    } else {
-        // 일반 접근 (루트), 강사 로그인 전에는 리스트를 볼 수 없음
     }
 });
 
@@ -68,6 +83,10 @@ socket.on('sessionExpired', () => {
         currentMessages = [];
         renderMessages();
     }
+});
+
+socket.on('disconnect', () => {
+    // 소켓 재연결은 socket.io가 자동 처리 — connect 이벤트에서 세션 복원
 });
 
 socket.on('initMessages', (messages) => {
@@ -260,30 +279,41 @@ function attemptLogin() {
     const pw = els.passwordInput.value;
     socket.emit('authenticate', pw, (response) => {
         if (response.success) {
-            isAdmin = true;
+            // 비밀번호를 세션으로 저장 (새로고침 시 자동 복원용)
+            localStorage.setItem('adminSession', pw);
+            activateAdminUI(response);
             els.loginModal.classList.add('hidden');
-            els.adminBtn.classList.add('hidden');
-            els.adminHeaderInfo.classList.remove('hidden');
-            els.adminTools.classList.remove('hidden');
-            els.adminPanel.classList.remove('hidden');
-            els.currentUrlTxt.textContent = `/live/${response.currentRoomPath}`;
-            
-            // history update
-            if(window.location.pathname !== `/live/${response.currentRoomPath}`) {
-                history.replaceState(null, '', `/live/${response.currentRoomPath}`);
-            }
-
-            currentMessages = response.currentMessages;
-            renderMessages();
-            
-            // Render 절전 모드 방지용 Keep-Alive (강사 접속 시 10분마다 핑 발송)
-            setInterval(() => {
-                fetch('/ping').catch(err => console.error('Ping error:', err));
-            }, 10 * 60 * 1000);
+            els.passwordInput.value = '';
         } else {
             alert('비밀번호가 일치하지 않습니다.');
         }
     });
+}
+
+// 강사 UI 활성화 (최초 로그인 & 자동 재인증 공통 처리)
+function activateAdminUI(response) {
+    isAdmin = true;
+    els.adminBtn.classList.add('hidden');
+    els.adminHeaderInfo.classList.remove('hidden');
+    els.adminTools.classList.remove('hidden');
+    els.adminPanel.classList.remove('hidden');
+    els.currentUrlTxt.textContent = `/live/${response.currentRoomPath}`;
+
+    // URL 동기화
+    if (window.location.pathname !== `/live/${response.currentRoomPath}`) {
+        history.replaceState(null, '', `/live/${response.currentRoomPath}`);
+    }
+
+    currentMessages = response.currentMessages;
+    renderMessages();
+
+    // Render 절전 모드 방지용 Keep-Alive (강사 접속 시 10분마다 핑 발송)
+    if (!activateAdminUI._keepAliveStarted) {
+        activateAdminUI._keepAliveStarted = true;
+        setInterval(() => {
+            fetch('/ping').catch(err => console.error('Ping error:', err));
+        }, 10 * 60 * 1000);
+    }
 }
 
 // Admin Actions
@@ -468,6 +498,7 @@ function createBadgeLabel(text, isForPdf = false, colorType = 'blue') {
 
 function showDisconnected(msg) {
     socket.disconnect(); // 소켓 강제 해제
+    localStorage.removeItem('adminSession'); // 저장된 강사 세션 제거
     els.statusAlert.textContent = msg;
     els.statusAlert.classList.remove('hidden');
     
