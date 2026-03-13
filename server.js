@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
     if (!socket.isStudent) {
       socket.isStudent = true;
       studentCount++;
-      io.to(currentRoomPath).emit('studentCountUpdate', studentCount);
+      io.emit('studentCountUpdate', studentCount);
     }
     socket.emit('initMessages', currentMessages);
     socket.emit('instructorStatus', adminCount > 0);
@@ -107,7 +107,7 @@ io.on('connection', (socket) => {
         if (socket.isStudent) {
           socket.isStudent = false;
           studentCount = Math.max(0, studentCount - 1);
-          io.to(currentRoomPath).emit('studentCountUpdate', studentCount);
+          io.emit('studentCountUpdate', studentCount);
         }
         socket.isAdmin = true;
         adminCount++;
@@ -128,7 +128,7 @@ io.on('connection', (socket) => {
     }
     if (socket.isStudent) {
       studentCount = Math.max(0, studentCount - 1);
-      io.to(currentRoomPath).emit('studentCountUpdate', studentCount);
+      io.emit('studentCountUpdate', studentCount);
     }
   });
 
