@@ -38,6 +38,44 @@
                 </div>
             </div>
             <div class="header-right">
+                <style>
+                    @keyframes bmc-shimmer {
+                        0% { background-position: -200% center; }
+                        100% { background-position: 200% center; }
+                    }
+                    @keyframes bmc-sparkle {
+                        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+                        50% { opacity: 1; transform: scale(1.2); }
+                    }
+                    .bmc-link {
+                        text-decoration: none;
+                        background: linear-gradient(135deg, #1a73e8 0%, #4f9cf7 40%, #7db8ff 50%, #4f9cf7 60%, #1a73e8 100%);
+                        background-size: 200% 100%;
+                        animation: bmc-shimmer 3s ease-in-out infinite;
+                        color: #fff;
+                        border-radius: 8px;
+                        padding: 5px 12px;
+                        gap: 6px;
+                        margin-right: 4px;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .bmc-link:hover { filter: brightness(1.1); }
+                    .bmc-sparkle1 { animation: bmc-sparkle 2s ease-in-out infinite; }
+                    .bmc-sparkle2 { animation: bmc-sparkle 2s ease-in-out 0.7s infinite; }
+                    .bmc-sparkle3 { animation: bmc-sparkle 2s ease-in-out 1.4s infinite; }
+                </style>
+                <a href="/bookmark-cleaner.html" class="icon-btn bmc-link" title="북마크 정리 도구">
+                    <svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 4C6 2.9 6.9 2 8 2H24C25.1 2 26 2.9 26 4V28L16 22L6 28V4Z" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" fill="rgba(255,255,255,0.2)"/>
+                        <path d="M13 11L16 14L22 8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle class="bmc-sparkle1" cx="25" cy="5" r="1.5" fill="#fff"/>
+                        <circle class="bmc-sparkle2" cx="21" cy="3" r="1" fill="#fff"/>
+                        <circle class="bmc-sparkle3" cx="27" cy="9" r="1.2" fill="#fff"/>
+                        <path class="bmc-sparkle1" d="M25 2L25.6 3.8H27.5L26 4.9L26.5 6.7L25 5.6L23.5 6.7L24 4.9L22.5 3.8H24.4Z" fill="#fff" opacity="0.7"/>
+                    </svg>
+                    <span style="font-size:0.78rem; font-weight:600; color:#fff;">북마크 정리하기</span>
+                </a>
                 <button id="downloadPdfBtn" class="icon-btn" title="PDF 문서 다운로드">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span class="btn-text-label">PDF</span>
