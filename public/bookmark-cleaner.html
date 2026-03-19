@@ -495,6 +495,101 @@
     }
 
     .flow-arrow { color: #aaa; font-size: 1rem; }
+
+    /* 모드 선택 */
+    .mode-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .mode-card {
+      flex: 1;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      position: relative;
+    }
+
+    .mode-card:hover {
+      border-color: #90b4f0;
+      background: #f8faff;
+    }
+
+    .mode-card.active {
+      border-color: #1a73e8;
+      background: #f0f5ff;
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+    }
+
+    .mode-card .mode-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .mode-card .mode-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .mode-card.active .mode-name {
+      color: #1a73e8;
+    }
+
+    .mode-card .mode-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .mode-tag-safe { background: #e6f4ea; color: #2d8f47; }
+    .mode-tag-bold { background: #fff3e0; color: #e65100; }
+
+    .mode-card .mode-desc {
+      font-size: 0.8rem;
+      color: #666;
+      line-height: 1.55;
+    }
+
+    .mode-card .mode-detail {
+      font-size: 0.75rem;
+      color: #999;
+      line-height: 1.5;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #eee;
+    }
+
+    .mode-card.active .mode-detail {
+      color: #7a9fd4;
+      border-top-color: #d2e3fc;
+    }
+
+    .mode-radio {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      transition: all 0.15s;
+    }
+
+    .mode-card.active .mode-radio {
+      border-color: #1a73e8;
+      background: #1a73e8;
+      box-shadow: inset 0 0 0 3px white;
+    }
   </style>
 </head>
 <body>
@@ -585,18 +680,23 @@
       <span class="flow-step">브라우저 가져오기</span>
     </div>
 
-    <div class="chatbot-tips" style="margin-bottom: 20px;">
-      <div class="chatbot-card">
-        <div class="name">ChatGPT <span class="badge badge-green">권장</span></div>
-        <div class="desc">채팅창에 아래 통합본을 붙여넣는다. 파일 첨부보다 텍스트 붙여넣기가 안정적이다.</div>
+    <div style="font-size:0.875rem; font-weight:600; margin-bottom:10px; color:#444;">
+      정리 방식 선택
+    </div>
+    <div class="mode-selector" id="mode-selector">
+      <div class="mode-card active" data-mode="refine" onclick="selectMode('refine')">
+        <div class="mode-radio"></div>
+        <div class="mode-icon">&#9881;&#65039;</div>
+        <div class="mode-name">구조 최적화 <span class="mode-tag mode-tag-safe">안정적</span></div>
+        <div class="mode-desc">기존 폴더 구조를 AI에게 전달하여, 현재 분류를 유지하면서 개선점만 반영한다.</div>
+        <div class="mode-detail">기존 분류가 어느 정도 잘 되어 있고, 미세 조정이 필요할 때 적합하다. 이미 익숙한 구조를 크게 바꾸지 않으므로 결과를 바로 적용하기 쉽다.</div>
       </div>
-      <div class="chatbot-card">
-        <div class="name">Gemini <span class="badge badge-green">권장</span></div>
-        <div class="desc">입력 용량이 넓어 대용량 북마크에 유리하다. 텍스트를 그대로 붙여넣으면 된다.</div>
-      </div>
-      <div class="chatbot-card">
-        <div class="name">Claude <span class="badge badge-blue">권장</span></div>
-        <div class="desc">프로젝트 기능을 쓰면 대용량도 처리할 수 있다. 텍스트를 그대로 붙여넣으면 된다.</div>
+      <div class="mode-card" data-mode="fresh" onclick="selectMode('fresh')">
+        <div class="mode-radio"></div>
+        <div class="mode-icon">&#10024;</div>
+        <div class="mode-name">제로베이스 재분류 <span class="mode-tag mode-tag-bold">과감한</span></div>
+        <div class="mode-desc">폴더 정보를 모두 제거하고 북마크만 전달하여, AI가 처음부터 최적의 구조를 설계한다.</div>
+        <div class="mode-detail">기존 분류가 뒤죽박죽이거나, 완전히 새로운 관점의 정리가 필요할 때 적합하다. 기존 구조에 대한 편향 없이 순수하게 콘텐츠 기반으로 분류한다.</div>
       </div>
     </div>
 
@@ -737,6 +837,7 @@
   let outputs = {};
   let stats = {};
   let parsedBookmarks = null; // 파싱된 트리 구조
+  let currentMode = 'refine'; // 'refine' | 'fresh'
 
   // 분할 상태
   const CHUNK_CHAR_LIMIT = 30000;
@@ -774,6 +875,15 @@
     if (file) processFile(file);
     fileInput.value = '';
   });
+
+  // 모드 선택
+  function selectMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.mode === mode);
+    });
+    if (outputs['markdown']) renderPrompt();
+  }
 
   // 사용자 요구사항 입력 시 프롬프트 실시간 갱신
   document.getElementById('user-requirements').addEventListener('input', () => {
@@ -991,6 +1101,27 @@
 
   function escapeMarkdown(text) {
     return text.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
+  }
+
+  // ───────────────────────────────────────────
+  // 출력 형식: 플랫 마크다운 (폴더 구조 제거, 링크만)
+  // ───────────────────────────────────────────
+  function generateFlatMarkdown(root) {
+    const lines = [];
+
+    function walk(node) {
+      if (node.type === 'link') {
+        const safeTitle = escapeMarkdown(node.title || node.url);
+        const safeUrl = node.url.replace(/\)/g, '%29');
+        lines.push('- [' + safeTitle + '](' + safeUrl + ')');
+      }
+      for (const child of (node.children || [])) {
+        walk(child);
+      }
+    }
+
+    walk(root);
+    return lines.join('\n');
   }
 
   // ───────────────────────────────────────────
@@ -1217,7 +1348,6 @@
   // 프롬프트 생성 (마크다운 URL 포함 + 출력 형식 지정)
   // ───────────────────────────────────────────
   function renderPrompt() {
-    const mdText = outputs['markdown'] || '';
     const count = stats.links || 0;
     const userReq = (document.getElementById('user-requirements') || {}).value || '';
 
@@ -1228,10 +1358,26 @@
       userConditions = '\n' + lines.map(line => {
         const trimmed = line.trim();
         if (!trimmed) return '';
-        // 이미 - 로 시작하면 그대로, 아니면 - 를 붙인다
         return trimmed.startsWith('-') ? trimmed : '- ' + trimmed;
       }).filter(Boolean).join('\n') + '\n';
     }
+
+    const isFresh = currentMode === 'fresh';
+
+    // 모드에 따라 데이터와 프롬프트 분기
+    const dataText = isFresh
+      ? generateFlatMarkdown(parsedBookmarks)
+      : (outputs['markdown'] || '');
+
+    const taskDesc = isFresh
+      ? '아래 북마크는 폴더 정보가 제거된 상태이다. 각 북마크의 제목과 URL만 보고 처음부터 최적의 폴더 구조를 설계한다.'
+      : '아래 북마크 목록을 분석하고 기존 폴더 구조를 기반으로 더 효율적인 구조로 개선한다.';
+
+    const modeConditions = isFresh
+      ? '- 기존 폴더 구조는 의도적으로 제거했다. 기존 분류에 구애받지 말고 콘텐츠 기반으로 자유롭게 분류한다.\n'
+      : '- 기존 폴더 구조가 합리적인 부분은 유지하되, 개선이 필요한 부분만 수정한다.\n';
+
+    const dataLabel = isFresh ? '# 북마크 목록' : '# 북마크 구조';
 
     const prompt =
       '아래는 웹 브라우저 북마크 목록이다 (총 ' + count + '개).\n' +
@@ -1240,9 +1386,10 @@
       '북마크 정리를 돕는 정보 구조 전문가\n' +
       '\n' +
       '# 작업\n' +
-      '아래 북마크 목록을 분석하고 더 효율적인 폴더 구조로 재배치한다.\n' +
+      taskDesc + '\n' +
       '\n' +
       '# 조건 및 제약\n' +
+      modeConditions +
       '- 중복되거나 유사한 주제의 북마크는 하나의 폴더로 통합한다.\n' +
       '- 폴더 이름은 짧고 직관적인 한국어로 작성한다.\n' +
       '- 폴더 깊이는 최대 3단계로 제한한다.\n' +
@@ -1268,9 +1415,9 @@
       '- [Spring](https://spring.io)\n' +
       '```\n' +
       '\n' +
-      '# 북마크 구조\n' +
+      dataLabel + '\n' +
       '```markdown\n' +
-      mdText +
+      dataText +
       '\n'+
       '```';
 
