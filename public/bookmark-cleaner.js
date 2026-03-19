@@ -2,8 +2,8 @@
 // 상태
 // ───────────────────────────────────────────
 const TAB_CONFIG = [
-  { id: 'clean-html', label: '원본 HTML',           desc: 'ICON 데이터를 포함한 원본 그대로의 HTML이다. AI가 분석을 어려워하는 이유를 확인할 수 있다.' },
-  { id: 'markdown',   label: '마크다운 구조',  desc: '폴더를 헤더(##)로, 링크를 마크다운 형식으로 출력한다. URL을 포함하므로 중복 탐지에 유리하다.' },
+  { id: 'clean-html', label: '원본 HTML',           desc: 'ICON 데이터를 포함한 원본 그대로의 HTML이에요. AI가 분석을 어려워하는 이유를 확인할 수 있어요.' },
+  { id: 'markdown',   label: '마크다운 구조',  desc: '폴더를 헤더(##)로, 링크를 마크다운 형식으로 출력해요. URL을 포함하므로 중복 탐지에 유리해요.' },
 ];
 
 let currentTab = 'clean-html';
@@ -11,6 +11,16 @@ let outputs = {};
 let stats = {};
 let parsedBookmarks = null; // 파싱된 트리 구조
 let currentMode = 'refine'; // 'refine' | 'fresh'
+
+// 카드-스텝 매핑
+const STEP_CARD_MAP = [
+  'export-area',   // 0
+  'upload-area',   // 1
+  'stats-area',    // 2
+  'chatbot-area',  // 3
+  'convert-area',  // 4
+  'import-area',   // 5
+];
 
 // 분할 상태
 const CHUNK_CHAR_LIMIT = 30000;
@@ -20,6 +30,13 @@ let currentChunk = 0;
 // ───────────────────────────────────────────
 // 이벤트 바인딩
 // ───────────────────────────────────────────
+// ⓪ → ① 전환
+document.getElementById('btn-export-done').addEventListener('click', () => {
+  document.getElementById('upload-area').style.display = 'block';
+  updateProgressBar();
+  document.getElementById('upload-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 
@@ -53,9 +70,29 @@ fileInput.addEventListener('change', e => {
 function selectMode(mode) {
   currentMode = mode;
   document.querySelectorAll('.mode-card').forEach(card => {
-    card.classList.toggle('active', card.dataset.mode === mode);
+    const isActive = card.dataset.mode === mode;
+    card.classList.toggle('active', isActive);
+    card.setAttribute('aria-checked', isActive ? 'true' : 'false');
   });
   if (outputs['markdown']) renderPrompt();
+}
+
+// 모드 카드 키보드 핸들러
+function handleModeKey(event, mode) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    selectMode(mode);
+  }
+  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+    event.preventDefault();
+    selectMode('fresh');
+    document.querySelector('.mode-card[data-mode="fresh"]').focus();
+  }
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    selectMode('refine');
+    document.querySelector('.mode-card[data-mode="refine"]').focus();
+  }
 }
 
 // 사용자 요구사항 입력 시 프롬프트 실시간 갱신
@@ -96,7 +133,7 @@ function processFile(file) {
   hideError();
 
   const reader = new FileReader();
-  reader.onerror = () => showError('파일을 읽을 수 없다. 다시 시도한다.');
+  reader.onerror = () => showError('파일을 읽을 수 없어요. 다시 시도해 주세요.');
   reader.onload = e => {
     try {
       const originalText = e.target.result;
@@ -106,7 +143,7 @@ function processFile(file) {
       parsedBookmarks = parseBookmarkHtml(originalText);
 
       if (!parsedBookmarks || parsedBookmarks.children.length === 0) {
-        showError('북마크 데이터를 찾을 수 없다. 브라우저에서 내보낸 북마크 HTML 파일인지 확인한다.');
+        showError('북마크 데이터를 찾을 수 없어요. "다운로드" 폴더에서 "bookmarks"로 시작하는 파일을 찾아서 다시 올려 주세요.');
         return;
       }
 
@@ -134,18 +171,32 @@ function processFile(file) {
       renderTabs();
       updateChunks();
       showCurrentOutput();
+      showFileStatus(file.name, originalSize, linkCount, folderCount);
 
       document.getElementById('stats-area').style.display = 'block';
       document.getElementById('chatbot-area').style.display = 'block';
-      document.getElementById('convert-area').style.display = 'block';
       renderPrompt();
+      updateProgressBar();
 
       document.getElementById('stats-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      showError('파일 처리 중 오류가 발생했다: ' + err.message);
+      showError('파일 처리 중 오류가 발생했어요: ' + err.message);
     }
   };
   reader.readAsText(file, 'UTF-8');
+}
+
+// ───────────────────────────────────────────
+// 파일 업로드 상태 표시
+// ───────────────────────────────────────────
+function showFileStatus(name, sizeBytes, linkCount, folderCount) {
+  const el = document.getElementById('file-status');
+  const sizeKB = Math.round(sizeBytes / 1024);
+  el.innerHTML =
+    '<span class="file-name">' + escapeHtml(name) + '</span> ' +
+    '<span class="file-meta">(' + sizeKB.toLocaleString() + ' KB · 북마크 ' + linkCount.toLocaleString() + '개 · 폴더 ' + folderCount.toLocaleString() + '개)</span>' +
+    '<br><button class="file-reupload" onclick="document.getElementById(\'file-input\').click()">다른 파일로 변경</button>';
+  el.style.display = 'block';
 }
 
 // ───────────────────────────────────────────
@@ -394,7 +445,7 @@ function updateChunks() {
   if (chunks.length > 1) {
     chunkInfo.style.display = 'block';
     chunkInfo.innerHTML =
-      '텍스트가 길어서 <strong>' + chunks.length + '개</strong>로 분할함.' +
+      '텍스트가 길어서 <strong>' + chunks.length + '개</strong>로 분할했어요.' +
       '<div class="chunk-nav" id="chunk-nav"></div>';
     renderChunkNav();
   } else {
@@ -466,12 +517,14 @@ function copyToClipboard(text, feedbackId) {
       document.execCommand('copy');
       onSuccess();
     } catch (err) {
-      // 최후 폴백: 사용자에게 직접 선택 안내
+      // 최후 폴백: 사용자에게 인라인 안내
       const output = document.getElementById('output');
       output.value = text;
       output.select();
       output.focus();
-      alert('자동 복사가 제한된 환경이다. 텍스트가 선택되었으니 Ctrl+C를 눌러 직접 복사한다.');
+      feedback.textContent = '자동 복사가 안 돼요. 위 텍스트가 선택되었으니 Ctrl+C를 눌러 직접 복사해 주세요.';
+      feedback.style.color = '#c62828';
+      feedback.classList.add('show');
     }
     document.body.removeChild(ta);
   }
@@ -495,6 +548,7 @@ function showError(msg) {
   document.getElementById('chatbot-area').style.display = 'none';
   document.getElementById('convert-area').style.display = 'none';
   document.getElementById('import-area').style.display = 'none';
+  updateProgressBar();
 }
 
 function hideError() {
@@ -651,6 +705,17 @@ function buildFreshPrompt(count, userConditionBlock) {
 function copyPrompt() {
   const text = document.getElementById('prompt-box').textContent;
   copyToClipboard(text, 'prompt-copy-feedback');
+
+  // 다음 단계 안내 표시
+  const guide = document.getElementById('copy-next-guide');
+  if (guide) guide.classList.add('show');
+
+  // ④ convert-area 열기
+  document.getElementById('convert-area').style.display = 'block';
+  updateProgressBar();
+  setTimeout(() => {
+    document.getElementById('convert-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
 }
 
 // ───────────────────────────────────────────
@@ -668,7 +733,7 @@ function convertAiResult() {
   document.getElementById('missing-area').style.display = 'none';
 
   if (!input) {
-    errorEl.textContent = 'AI 결과 텍스트를 붙여넣은 뒤 다시 시도한다.';
+    errorEl.textContent = 'AI 결과 텍스트를 붙여넣은 뒤 다시 시도해 주세요.';
     errorEl.style.display = 'block';
     return;
   }
@@ -679,7 +744,7 @@ function convertAiResult() {
     const folderCount = countFolders(tree);
 
     if (linkCount === 0) {
-      errorEl.textContent = '북마크 링크를 찾을 수 없다. AI 결과에 "- [제목](URL)" 형식의 링크가 포함되어 있는지 확인한다.';
+      errorEl.textContent = '북마크 링크를 찾을 수 없어요. AI 결과에 "- [제목](URL)" 형식의 링크가 포함되어 있는지 확인해 주세요.';
       errorEl.style.display = 'block';
       return;
     }
@@ -703,7 +768,7 @@ function convertAiResult() {
 
     document.getElementById('convert-output').value = convertedHtml;
     document.getElementById('convert-result').style.display = 'block';
-    document.getElementById('import-area').style.display = 'block';
+    updateProgressBar();
 
     // 누락 검증
     renderMissingCheck(tree);
@@ -716,7 +781,7 @@ function convertAiResult() {
       document.getElementById('convert-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   } catch (err) {
-    errorEl.textContent = '변환 중 오류가 발생했다: ' + err.message;
+    errorEl.textContent = '변환 중 오류가 발생했어요: ' + err.message;
     errorEl.style.display = 'block';
   }
 }
@@ -861,20 +926,20 @@ function renderMissingCheck(aiTree) {
 
   if (missingBookmarks.length === 0) {
     headerEl.innerHTML = '<span class="badge-ok">누락 없음</span>';
-    summaryEl.textContent = '원본 ' + originalCount + '개 북마크가 모두 포함되었다.';
+    summaryEl.textContent = '원본 ' + originalCount + '개 북마크가 모두 포함되었어요.';
     listEl.style.display = 'none';
     btnRow.style.display = 'none';
   } else {
     headerEl.innerHTML = '<span class="badge-warn">누락 ' + missingBookmarks.length + '개 발견</span>';
     summaryEl.textContent =
-      '원본 ' + originalCount + '개 중 ' + aiCount + '개 포함, ' +
-      missingBookmarks.length + '개 누락됨. 아래 목록을 AI에 전달하여 추가 분류를 요청한다.';
+      '원본 ' + originalCount + '개 중 ' + aiCount + '개가 포함되었고, ' +
+      missingBookmarks.length + '개가 누락되었어요. 아래 목록을 AI에 전달하여 추가 분류를 요청해 주세요.';
 
     listEl.style.display = 'block';
     listEl.innerHTML = missingBookmarks.map(item =>
       '<div class="item">' +
-        '<span class="folder">' + escapeHtml(item.folder) + '</span><br>' +
-        '<span class="title">' + escapeHtml(item.title) + '</span> ' +
+        '<span class="folder">' + escapeHtml(item.folder) + '</span>' +
+        '<span class="title">' + escapeHtml(item.title) + '</span>' +
         '<span class="url">' + escapeHtml(item.url) + '</span>' +
       '</div>'
     ).join('');
@@ -911,11 +976,18 @@ function downloadConvertedHtml() {
   const a = document.createElement('a');
   const url = URL.createObjectURL(blob);
   a.href = url;
-  a.download = 'bookmarks_reorganized.html';
+  a.download = '정리된_북마크.html';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
+  // ⑤ import-area 열기
+  document.getElementById('import-area').style.display = 'block';
+  updateProgressBar();
+  setTimeout(() => {
+    document.getElementById('import-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
 }
 
 function copyConvertedHtml() {
@@ -937,7 +1009,66 @@ document.getElementById('ai-input').addEventListener('input', function () {
   const matches = text.match(linkPattern);
   const count = matches ? matches.length : 0;
   preview.textContent = count > 0
-    ? 'URL ' + count + '개 감지됨, 변환 가능'
-    : '링크를 감지할 수 없음';
+    ? 'URL ' + count + '개가 감지되었어요. 변환할 수 있어요.'
+    : '링크를 감지할 수 없어요.';
   preview.style.color = count > 0 ? '#2d8f47' : '#c62828';
 });
+
+// ───────────────────────────────────────────
+// 통합 진행 표시
+// ───────────────────────────────────────────
+function scrollToStep(stepIndex) {
+  const cardId = STEP_CARD_MAP[stepIndex];
+  const el = document.getElementById(cardId);
+  if (!el || el.style.display === 'none') return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateProgressBar() {
+  const progressBar = document.getElementById('progress-bar');
+  if (!progressBar) return;
+
+  const steps = progressBar.querySelectorAll('.flow-step');
+  let activeIndex = 0;
+
+  // 뷰포트에 가장 가까운 가시 카드를 활성 스텝으로 결정
+  let minDistance = Infinity;
+  STEP_CARD_MAP.forEach((cardId, i) => {
+    const el = document.getElementById(cardId);
+    if (!el || getComputedStyle(el).display === 'none') return;
+    const rect = el.getBoundingClientRect();
+    const distance = Math.abs(rect.top - 80);
+    if (distance < minDistance) {
+      minDistance = distance;
+      activeIndex = i;
+    }
+  });
+
+  steps.forEach((step, i) => {
+    const cardId = STEP_CARD_MAP[i];
+    const el = document.getElementById(cardId);
+    const isHidden = el && getComputedStyle(el).display === 'none';
+
+    step.classList.remove('active', 'done');
+    step.classList.toggle('locked', isHidden);
+    step.disabled = isHidden;
+
+    if (i === activeIndex) {
+      step.classList.add('active');
+    } else if (i < activeIndex && !isHidden) {
+      step.classList.add('done');
+    }
+  });
+}
+
+// 스크롤 시 진행 표시 갱신 (throttle)
+let scrollTimer = null;
+window.addEventListener('scroll', () => {
+  if (scrollTimer) return;
+  scrollTimer = setTimeout(() => {
+    scrollTimer = null;
+    updateProgressBar();
+  }, 80);
+}, { passive: true });
+
+updateProgressBar();
