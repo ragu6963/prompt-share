@@ -2,13 +2,11 @@
 // 상태
 // ───────────────────────────────────────────
 const TAB_CONFIG = [
-  { id: 'structure',  label: '구조만 (가장 가벼움)', desc: '폴더 구조와 제목만 출력한다. URL을 제외해 토큰을 최소화하며, 구조 분석에 가장 적합하다.' },
-  { id: 'markdown',   label: '마크다운 (URL 포함)',  desc: '폴더를 헤더(##)로, 링크를 마크다운 형식으로 출력한다. URL을 포함하므로 중복 탐지에 유리하다.' },
-  { id: 'url-list',   label: 'URL 목록',            desc: '폴더경로 | 제목 | URL 형태의 표 형식이다. 스프레드시트로 옮기거나 정밀 분석에 적합하다.' },
-  { id: 'clean-html', label: '정리된 HTML',          desc: 'ICON만 제거한 Netscape 형식 HTML이다. 브라우저에 다시 가져오기(import)할 수 있다.' },
+  { id: 'clean-html', label: '원본 HTML',           desc: 'ICON 데이터를 포함한 원본 그대로의 HTML이다. AI가 분석을 어려워하는 이유를 확인할 수 있다.' },
+  { id: 'markdown',   label: '마크다운 구조',  desc: '폴더를 헤더(##)로, 링크를 마크다운 형식으로 출력한다. URL을 포함하므로 중복 탐지에 유리하다.' },
 ];
 
-let currentTab = 'structure';
+let currentTab = 'clean-html';
 let outputs = {};
 let stats = {};
 let parsedBookmarks = null; // 파싱된 트리 구조
@@ -117,12 +115,10 @@ function processFile(file) {
       const folderCount = countFolders(parsedBookmarks);
 
       // 각 형식 생성
-      outputs['structure'] = generateStructure(parsedBookmarks);
       outputs['markdown'] = generateMarkdown(parsedBookmarks);
-      outputs['url-list'] = generateUrlList(parsedBookmarks);
-      outputs['clean-html'] = generateCleanHtml(parsedBookmarks);
+      outputs['clean-html'] = originalText;
 
-      const cleanSize = new Blob([outputs['clean-html']]).size;
+      const cleanSize = new Blob([outputs['markdown']]).size;
 
       stats = {
         originalKB: Math.round(originalSize / 1024),
@@ -130,6 +126,8 @@ function processFile(file) {
         reduction: Math.round((1 - cleanSize / originalSize) * 100),
         links: linkCount,
         folders: folderCount,
+        originalChars: originalText.length,
+        markdownChars: outputs['markdown'].length,
       };
 
       renderStats();
@@ -396,8 +394,7 @@ function updateChunks() {
   if (chunks.length > 1) {
     chunkInfo.style.display = 'block';
     chunkInfo.innerHTML =
-      '텍스트가 길어서 <strong>' + chunks.length + '개</strong>로 분할되었다. ' +
-      '챗봇에 순서대로 붙여넣고 "계속 분석해달라"고 요청한다.' +
+      '텍스트가 길어서 <strong>' + chunks.length + '개</strong>로 분할함.' +
       '<div class="chunk-nav" id="chunk-nav"></div>';
     renderChunkNav();
   } else {
@@ -432,16 +429,19 @@ function showCurrentOutput() {
 function renderStats() {
   const grid = document.getElementById('stats-grid');
   grid.innerHTML =
-    '<div class="stat-box"><div class="num">' + stats.links.toLocaleString() + '</div><div class="label">북마크 수</div></div>' +
-    '<div class="stat-box"><div class="num">' + stats.folders.toLocaleString() + '</div><div class="label">폴더 수</div></div>' +
-    '<div class="stat-box"><div class="num">' + stats.originalKB.toLocaleString() + ' KB</div><div class="label">원본 크기</div></div>' +
-    '<div class="stat-box"><div class="num">' + stats.cleanKB.toLocaleString() + ' KB</div><div class="label">변환 후 크기</div></div>' +
-    '<div class="stat-box"><div class="num">' + stats.reduction + '%</div><div class="label">크기 감소율</div></div>';
-
-  document.getElementById('reduction-label').textContent =
-    '아이콘 데이터 제거로 파일 크기가 ' + stats.reduction + '% 감소됨';
-
-  document.getElementById('reduction-fill').style.width = stats.reduction + '%';
+    '<div class="stat-row">' +
+      '<div class="stat-box"><div class="num">' + stats.links.toLocaleString() + '</div><div class="label">북마크 수</div></div>' +
+      '<div class="stat-box"><div class="num">' + stats.folders.toLocaleString() + '</div><div class="label">폴더 수</div></div>' +
+    '</div>' +
+    '<div class="stat-row">' +
+      '<div class="stat-box stat-html"><div class="num">' + stats.originalKB.toLocaleString() + ' KB</div><div class="label">원본 HTML 크기</div></div>' +
+      '<div class="stat-box stat-md"><div class="num">' + stats.cleanKB.toLocaleString() + ' KB</div><div class="label">마크다운 크기</div></div>' +
+      '<div class="stat-box"><div class="num">' + stats.reduction + '%</div><div class="label">크기 감소율</div></div>' +
+    '</div>' +
+    '<div class="stat-row">' +
+      '<div class="stat-box stat-html"><div class="num">' + stats.originalChars.toLocaleString() + '</div><div class="label">원본 HTML 글자 수</div></div>' +
+      '<div class="stat-box stat-md"><div class="num">' + stats.markdownChars.toLocaleString() + '</div><div class="label">마크다운 글자 수</div></div>' +
+    '</div>';
 }
 
 // ───────────────────────────────────────────
@@ -483,24 +483,6 @@ function copyToClipboard(text, feedbackId) {
   }
 }
 
-function copyOutput() {
-  const text = chunks.length > 0 ? chunks[currentChunk] : (outputs[currentTab] || '');
-  copyToClipboard(text, 'copy-feedback');
-}
-
-function downloadOutput() {
-  const extMap = { 'clean-html': 'html', 'markdown': 'md', 'structure': 'txt', 'url-list': 'txt' };
-  const ext = extMap[currentTab] || 'txt';
-  const blob = new Blob([outputs[currentTab] || ''], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  a.href = url;
-  a.download = 'bookmarks_clean.' + ext;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 
 // ───────────────────────────────────────────
 // 에러 표시

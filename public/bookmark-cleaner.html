@@ -31,15 +31,61 @@
     &bull; 대량의 북마크를 처리하는 과정에서 일부 항목이 누락될 수 있다. 변환 후 누락 검증 기능으로 확인하고 보완한다.
   </div>
 
-  <!-- STEP 1: 파일 가져오기 -->
+  <!-- STEP 0: 북마크 내보내기 -->
   <div class="card">
-    <h2>① 북마크 파일 불러오기</h2>
+    <h2>&#9450; 북마크 내보내기</h2>
 
-    <div class="how-to" style="margin-bottom: 18px;">
-      <strong>북마크 내보내기 방법</strong><br>
-      &bull; <strong>Chrome / Edge:</strong> 북마크 관리자(Ctrl+Shift+O) &rarr; 우상단 &#8942; 메뉴 &rarr; <em>북마크 내보내기</em><br>
-      &bull; <strong>Firefox:</strong> 북마크 라이브러리(Ctrl+Shift+B) &rarr; 가져오기 및 백업 &rarr; <em>HTML로 내보내기</em><br>
-      &bull; <strong>Safari:</strong> 파일 메뉴 &rarr; <em>북마크 내보내기</em>
+    <div class="flow-diagram">
+      <span class="flow-step active">북마크 내보내기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">파일 불러오기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">변환 결과</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">AI에 붙여넣기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">AI 결과 변환</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">브라우저 가져오기</span>
+    </div>
+
+    <ul class="step-list">
+      <li>
+        <span class="step-num browser-icon">C</span>
+        <strong>Chrome / Edge</strong><br>
+        <strong class="os-label">Windows:</strong> Ctrl+Shift+O &rarr; 우상단 &#8942; 메뉴 &rarr; <em>북마크 내보내기</em><br>
+        <strong class="os-label">Mac:</strong> &#8984;+Option+B &rarr; 우상단 &#8942; 메뉴 &rarr; <em>북마크 내보내기</em>
+      </li>
+      <li>
+        <span class="step-num browser-icon" style="background:#ff7139;">F</span>
+        <strong>Firefox</strong><br>
+        <strong class="os-label">Windows:</strong> Ctrl+Shift+B &rarr; 가져오기 및 백업 &rarr; <em>HTML로 내보내기</em><br>
+        <strong class="os-label">Mac:</strong> &#8984;+Shift+B &rarr; 가져오기 및 백업 &rarr; <em>HTML로 내보내기</em>
+      </li>
+      <li>
+        <span class="step-num browser-icon" style="background:#007aff;">S</span>
+        <strong>Safari</strong> <span style="font-size:0.78rem; color:#888;">(Mac 전용)</span><br>
+        파일 메뉴 &rarr; <em>북마크 내보내기</em>
+      </li>
+    </ul>
+  </div>
+
+  <!-- STEP 1: 파일 불러오기 -->
+  <div class="card">
+    <h2>① 파일 불러오기</h2>
+
+    <div class="flow-diagram">
+      <span class="flow-step">북마크 내보내기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step active">파일 불러오기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">변환 결과</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">AI에 붙여넣기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">AI 결과 변환</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">브라우저 가져오기</span>
     </div>
 
     <div id="drop-zone">
@@ -52,16 +98,27 @@
     <div class="error-msg" id="error-msg"></div>
   </div>
 
-  <!-- STEP 2: 결과 -->
+  <!-- STEP 2: 변환 결과 -->
   <div class="card" id="stats-area">
     <h2>② 변환 결과</h2>
+
+    <div class="flow-diagram">
+      <span class="flow-step">북마크 내보내기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">파일 불러오기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step active">변환 결과</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">AI에 붙여넣기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">AI 결과 변환</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">브라우저 가져오기</span>
+    </div>
 
     <div class="stats-grid" id="stats-grid"></div>
 
     <div class="reduction-label" id="reduction-label"></div>
-    <div class="reduction-bar">
-      <div class="reduction-fill" id="reduction-fill" style="width:0%"></div>
-    </div>
 
     <div class="tab-group" id="tab-group"></div>
     <div class="tab-desc" id="tab-desc"></div>
@@ -70,22 +127,19 @@
 
     <div class="chunk-info" id="chunk-info"></div>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="copyOutput()">클립보드에 복사</button>
-      <button class="btn btn-secondary" onclick="downloadOutput()">파일 다운로드</button>
-      <span class="copy-feedback" id="copy-feedback">복사됨</span>
-    </div>
 
   </div>
 
-  <!-- STEP 3: 챗봇 활용 -->
+  <!-- STEP 3: AI에 붙여넣기 -->
   <div class="card" id="chatbot-area" style="display:none">
-    <h2>③ AI 챗봇에 붙여넣기</h2>
+    <h2>③ AI에 붙여넣기</h2>
 
     <div class="flow-diagram">
       <span class="flow-step">북마크 내보내기</span>
       <span class="flow-arrow">&rarr;</span>
-      <span class="flow-step">이 도구로 변환</span>
+      <span class="flow-step">파일 불러오기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">변환 결과</span>
       <span class="flow-arrow">&rarr;</span>
       <span class="flow-step active">AI에 붙여넣기</span>
       <span class="flow-arrow">&rarr;</span>
@@ -137,14 +191,16 @@
     <div class="prompt-box" id="prompt-box"></div>
   </div>
 
-  <!-- STEP 4: AI 결과 → 북마크 HTML 역변환 -->
+  <!-- STEP 4: AI 결과 변환 -->
   <div class="card" id="convert-area">
-    <h2>④ AI 결과 &rarr; 북마크 파일로 변환</h2>
+    <h2>④ AI 결과 변환</h2>
 
     <div class="flow-diagram">
       <span class="flow-step">북마크 내보내기</span>
       <span class="flow-arrow">&rarr;</span>
-      <span class="flow-step">이 도구로 변환</span>
+      <span class="flow-step">파일 불러오기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">변환 결과</span>
       <span class="flow-arrow">&rarr;</span>
       <span class="flow-step">AI에 붙여넣기</span>
       <span class="flow-arrow">&rarr;</span>
@@ -154,8 +210,7 @@
     </div>
 
     <p style="font-size:0.875rem; color:#555; margin-bottom:14px; line-height:1.6;">
-      AI 챗봇이 출력한 마크다운 텍스트를 아래에 붙여넣고 "변환" 버튼을 누른다.<br>
-      <code>## 폴더명</code>은 폴더로, <code>- [제목](URL)</code>은 북마크로 변환된다.
+      AI 챗봇이 출력한 마크다운 텍스트를 아래에 붙여넣고 "북마크 HTML로 변환" 버튼을 누른다.<br>
     </p>
 
     <textarea id="ai-input" placeholder="AI가 출력한 마크다운을 여기에 붙여넣는다.
@@ -181,8 +236,6 @@
       <textarea id="convert-output" readonly></textarea>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="downloadConvertedHtml()">북마크 HTML 다운로드</button>
-        <button class="btn btn-secondary" onclick="copyConvertedHtml()">클립보드에 복사</button>
-        <span class="copy-feedback" id="convert-copy-feedback">복사됨</span>
       </div>
 
       <div class="missing-area" id="missing-area">
@@ -190,21 +243,23 @@
         <div class="missing-summary" id="missing-summary"></div>
         <div class="missing-list" id="missing-list"></div>
         <div class="btn-row" id="missing-btn-row" style="display:none">
-          <button class="btn btn-secondary" onclick="copyMissingMarkdown()">누락 목록 복사 (AI에 전달용)</button>
+          <button class="btn btn-secondary" onclick="copyMissingMarkdown()">누락 목록 복사 (AI 재 전달용)</button>
           <span class="copy-feedback" id="missing-copy-feedback">복사됨</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- STEP 5: 브라우저에 가져오기 -->
+  <!-- STEP 5: 브라우저 가져오기 -->
   <div class="card" id="import-area">
-    <h2>⑤ 브라우저에 북마크 가져오기</h2>
+    <h2>⑤ 브라우저 가져오기</h2>
 
     <div class="flow-diagram">
       <span class="flow-step">북마크 내보내기</span>
       <span class="flow-arrow">&rarr;</span>
-      <span class="flow-step">이 도구로 변환</span>
+      <span class="flow-step">파일 불러오기</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">변환 결과</span>
       <span class="flow-arrow">&rarr;</span>
       <span class="flow-step">AI에 붙여넣기</span>
       <span class="flow-arrow">&rarr;</span>
@@ -213,23 +268,24 @@
       <span class="flow-step active">브라우저 가져오기</span>
     </div>
 
-    <div class="how-to" style="margin-bottom: 18px;">
-      <strong>가져오기 전 주의사항:</strong> 기존 북마크에 새 구조가 추가되는 방식이다.
-      기존 북마크를 먼저 백업(내보내기)한 뒤 삭제하고 가져오면 깔끔하게 교체된다.
-    </div>
 
     <ul class="step-list">
       <li>
-        <span class="step-num">1</span>
-        <strong>Chrome / Edge:</strong> 북마크 관리자(Ctrl+Shift+O) &rarr; 우상단 &#8942; 메뉴 &rarr; <em>북마크 가져오기</em> &rarr; 다운로드한 HTML 파일 선택
+        <span class="step-num browser-icon">C</span>
+        <strong>Chrome / Edge</strong><br>
+        <strong class="os-label">Windows:</strong> Ctrl+Shift+O &rarr; 우상단 &#8942; 메뉴 &rarr; <em>북마크 가져오기</em> &rarr; HTML 파일 선택<br>
+        <strong class="os-label">Mac:</strong> &#8984;+Option+B &rarr; 우상단 &#8942; 메뉴 &rarr; <em>북마크 가져오기</em> &rarr; HTML 파일 선택
       </li>
       <li>
-        <span class="step-num">2</span>
-        <strong>Firefox:</strong> 북마크 라이브러리(Ctrl+Shift+B) &rarr; 가져오기 및 백업 &rarr; <em>HTML에서 북마크 가져오기</em> &rarr; 파일 선택
+        <span class="step-num browser-icon" style="background:#ff7139;">F</span>
+        <strong>Firefox</strong><br>
+        <strong class="os-label">Windows:</strong> Ctrl+Shift+B &rarr; 가져오기 및 백업 &rarr; <em>HTML에서 북마크 가져오기</em> &rarr; 파일 선택<br>
+        <strong class="os-label">Mac:</strong> &#8984;+Shift+B &rarr; 가져오기 및 백업 &rarr; <em>HTML에서 북마크 가져오기</em> &rarr; 파일 선택
       </li>
       <li>
-        <span class="step-num">3</span>
-        <strong>Safari:</strong> 파일 메뉴 &rarr; <em>다음에서 가져오기</em> &rarr; <em>북마크 HTML 파일</em> &rarr; 파일 선택
+        <span class="step-num browser-icon" style="background:#007aff;">S</span>
+        <strong>Safari</strong> <span style="font-size:0.78rem; color:#888;">(Mac 전용)</span><br>
+        파일 메뉴 &rarr; <em>다음에서 가져오기</em> &rarr; <em>북마크 HTML 파일</em> &rarr; 파일 선택
       </li>
     </ul>
   </div>
